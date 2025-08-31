@@ -1,11 +1,14 @@
-import { Globe, Menu, Shield, X } from 'lucide-react';
+import { Globe, Menu, User, X } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import logo from '../assets/logo.png';
+import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
   const { language, toggleLanguage, t } = useLanguage();
+  const { isAuthenticated, user } = useAuth();
 
   const navItems = [
     { path: '/risk-checker', label: t('nav.risk-checker') },
@@ -24,13 +27,15 @@ const Header = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2 group">
-            <div className="bg-gradient-to-br from-teal-600 to-blue-600 p-2 rounded-lg group-hover:scale-105 transition-transform">
-              <Shield className="h-6 w-6 text-white" />
-            </div>
-            <span className="font-bold text-xl text-gray-800">
-              Farm Rakshaa
-            </span>
-          </Link>
+  <img
+    src={logo}
+    alt="Farm Rakshaa Logo"
+    className="h-10 w-auto group-hover:scale-105 transition-transform"
+  />
+  <span className="font-bold text-xl text-gray-800">
+    Farm Rakshaa
+  </span>
+</Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
@@ -56,14 +61,32 @@ const Header = () => {
               className="flex items-center space-x-1 text-sm text-gray-600 hover:text-teal-600 transition-colors"
             >
               <Globe className="h-4 w-4" />
-              <span>{language === 'en' ? 'हिं' : 'EN'}</span>
+              <span>{language === 'en' ? 'हिंदी' : 'English'}</span>
             </button>
-            <Link
-              to="/login"
-              className="bg-gradient-to-r from-teal-600 to-blue-600 text-white px-6 py-2 rounded-full text-sm font-medium hover:shadow-lg transition-all duration-200 hover:scale-105"
-            >
-              {t('auth.login')} / {t('auth.signup')}
-            </Link>
+            {isAuthenticated ? (
+              <Link
+                to="/farmer"
+                className="flex items-center space-x-2 bg-gradient-to-r from-teal-600 to-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium hover:shadow-lg transition-all duration-200 hover:scale-105"
+              >
+                {user?.profileImage ? (
+                  <img
+                    src={user.profileImage}
+                    alt="Profile"
+                    className="w-6 h-6 rounded-full object-cover border-2 border-white"
+                  />
+                ) : (
+                  <User className="h-4 w-4" />
+                )}
+                <span>{user?.name || 'Farmer'}</span>
+              </Link>
+            ) : (
+              <Link
+                to="/login"
+                className="bg-gradient-to-r from-teal-600 to-blue-600 text-white px-6 py-2 rounded-full text-sm font-medium hover:shadow-lg transition-all duration-200 hover:scale-105"
+              >
+                {t('auth.login')} / {t('auth.signup')}
+              </Link>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -101,13 +124,24 @@ const Header = () => {
                   <Globe className="h-4 w-4" />
                   <span>{language === 'en' ? 'हिंदी' : 'English'}</span>
                 </button>
-                <Link
-                  to="/risk-checker"
-                  onClick={() => setIsMenuOpen(false)}
-                  className="bg-gradient-to-r from-teal-600 to-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium"
-                >
-                  {t('cta.check-risk')}
-                </Link>
+                {isAuthenticated ? (
+                  <Link
+                    to="/farmer"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center space-x-2 bg-gradient-to-r from-teal-600 to-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium"
+                  >
+                    <User className="h-4 w-4" />
+                    <span>{user?.name || 'Farmer'}</span>
+                  </Link>
+                ) : (
+                  <Link
+                    to="/risk-checker"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="bg-gradient-to-r from-teal-600 to-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium"
+                  >
+                    {t('cta.check-risk')}
+                  </Link>
+                )}
               </div>
             </div>
           </div>

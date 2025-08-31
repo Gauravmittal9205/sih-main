@@ -1,6 +1,39 @@
-# Farm Health Guardian
+# Farm Rakshaa - Farm Health Guardian
 
-A comprehensive farm risk assessment and management application.
+A comprehensive farm risk assessment and management application with AI-powered biosecurity insights.
+
+## 🚀 Quick Start
+
+### Option 1: One-Click Start (Recommended)
+```bash
+# Windows PowerShell
+.\start-app.ps1
+
+# Windows Command Prompt
+start-app.bat
+```
+
+### Option 2: Manual Start
+```bash
+# Start Backend
+cd backend
+npm install
+npm run dev
+
+# Start Frontend (in new terminal)
+npm install
+npm run dev
+```
+
+The application will automatically open at **http://localhost:5173** showing the landing page.
+
+## 🏠 Landing Page Features
+
+- **Public Access**: No login required to view the landing page
+- **Feature Overview**: Learn about risk assessment, training, and alerts
+- **Easy Navigation**: Quick access to login, signup, and main features
+- **Responsive Design**: Works on desktop, tablet, and mobile
+- **Multi-language**: English and Hindi support
 
 ## Prerequisites
 
@@ -61,6 +94,12 @@ A comprehensive farm risk assessment and management application.
 
 ## Available Scripts
 
+### Quick Start Scripts
+- `start-app.ps1` - PowerShell script to start both servers and open landing page
+- `start-app.bat` - Batch file to start both servers and open landing page
+- `start-frontend.ps1` - Start frontend only
+- `start-backend.ps1` - Start backend only
+
 ### Frontend
 - `npm run dev` - Start the development server
 - `npm run build` - Build for production
@@ -70,6 +109,23 @@ A comprehensive farm risk assessment and management application.
 - `npm start` - Start the production server
 - `npm run dev` - Start the development server with nodemon
 - `npm test` - Run tests
+
+## Application Structure
+
+### Public Pages (No Login Required)
+- **Landing Page** (`/`) - Main homepage with feature overview
+- **Login** (`/login`) - User authentication
+- **Signup** (`/signup`) - User registration
+- **Forgot Password** (`/forgot-password`) - Password reset
+
+### Protected Pages (Login Required)
+- **Risk Checker** (`/risk-checker`) - Biosecurity assessment
+- **Training** (`/training`) - Educational content
+- **Resources** (`/resources`) - Farming resources
+- **Alerts** (`/alerts`) - Disease alerts
+- **Compliance** (`/compliance`) - Regulatory compliance
+- **Farmer Dashboard** (`/farmer`) - Main dashboard
+- **Admin Dashboard** (`/admin`) - Admin panel
 
 ## Project Structure
 
@@ -82,6 +138,7 @@ project/
 │   ├── middleware/          # Custom middleware
 │   ├── server.js            # Main server file
 │   └── package.json         # Backend dependencies
+├── ml-api/                  # Machine Learning API
 ├── public/                  # Static files
 ├── src/
 │   ├── components/          # Reusable UI components
@@ -90,6 +147,8 @@ project/
 │   ├── contexts/            # React contexts
 │   ├── App.tsx              # Main App component
 │   └── main.tsx             # Entry point
+├── start-app.ps1           # Quick start PowerShell script
+├── start-app.bat           # Quick start batch file
 ├── .env.example            # Example environment variables
 └── package.json            # Frontend dependencies
 ```
@@ -126,3 +185,4 @@ The API documentation is available at `http://localhost:3001/api-docs` when the 
 3. Commit your changes
 4. Push to the branch
 5. Create a new Pull Request
+"# sih" 

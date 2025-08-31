@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import AdminDashboard from './pages/AdminDashboard';
 import FarmerDashboard from './pages/FarmerDashboard';
+import VetDashboard from './pages/VetDashboard';
 import Faqs from './pages/Faqs';
 import Feedback from './pages/Feedback';
 import Alerts from './pages/Alerts';
@@ -15,9 +16,15 @@ import Contact from './pages/Contact';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Resources from './pages/Resources';
-import RiskChecker from './pages/RiskChecker';
+import BiosecurityAssessment from './pages/BiosecurityAssessment';
 import Signup from './pages/Signup';
+import FarmerSignup from './pages/FarmerSignup';
+import VetSignup from './pages/VetSignup';
 import Training from './pages/Training';
+import UserProfile from './pages/UserProfile';
+import FarmData from './pages/FarmData';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 // Protected Route component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -43,33 +50,39 @@ const queryClient = new QueryClient({
   },
 });
 
-// ...existing code...
-
 function App() {
   const location = useLocation();
   const isFarmer = location.pathname === '/farmer';
+  const isVet = location.pathname === '/vet';
   return (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
         <AuthProvider>
           <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-            {/* Hide global header/footer on farmer dashboard */}
-            {!isFarmer && <Header />}
+            {/* Hide global header/footer on farmer and vet dashboards */}
+            {!isFarmer && !isVet && <Header />}
             <main>
               <Routes>
+                {/* Public Landing Page */}
                 <Route
                   path="/"
-                  element={
-                    <ProtectedRoute>
-                      <Home />
-                    </ProtectedRoute>
-                  }
+                  element={<Home />}
                 />
+                
+                {/* Public Auth Pages */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/signup/farmer" element={<FarmerSignup />} />
+                <Route path="/signup/vet" element={<VetSignup />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                
+                {/* Protected Routes */}
                 <Route
                   path="/risk-checker"
                   element={
                     <ProtectedRoute>
-                      <RiskChecker />
+                      <BiosecurityAssessment />
                     </ProtectedRoute>
                   }
                 />
@@ -145,18 +158,41 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
+                <Route
+                  path="/vet"
+                  element={
+                    <ProtectedRoute>
+                      <VetDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute>
+                      <UserProfile />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/farm-data"
+                  element={
+                    <ProtectedRoute>
+                      <FarmData />
+                    </ProtectedRoute>
+                  }
+                />
+                
+                {/* Catch all route - redirect to home */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </main>
-            {!isFarmer && <Footer />}
+            {!isFarmer && !isVet && <Footer />}
           </div>
         </AuthProvider>
       </LanguageProvider>
     </QueryClientProvider>
   );
 }
-//
 
 export default App;

@@ -1,12 +1,43 @@
 const express = require('express');
 const { check } = require('express-validator');
-const { register, login, logout, getUserProfile, updateFarmData, forgotPassword } = require('../controllers/authController');
+const { register, registerVet, login, logout, getUserProfile, updateFarmData } = require('../controllers/authController');
 const { protect } = require('../middleware/authMiddleware');
+const multer = require('multer');
+const path = require('path');
 
 const router = express.Router();
 
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/documents/');
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
+  fileFilter: function (req, file, cb) {
+    const allowedTypes = /jpeg|jpg|png|pdf/;
+    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = allowedTypes.test(file.mimetype);
+    
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb(new Error('Only image and PDF files are allowed'));
+    }
+  }
+});
+
 // @route   POST /api/auth/register
-// @desc    Register a new user
+// @desc    Register a new farmer
 // @access  Public
 router.post(
   '/register',
@@ -18,11 +49,26 @@ router.post(
     check('street', 'Street address is required').not().isEmpty(),
     check('district', 'District is required').not().isEmpty(),
     check('state', 'State is required').not().isEmpty(),
-    check('aadhaarNumber', 'Please provide a valid 12-digit Aadhaar number').matches(/^[2-9]{1}[0-9]{3}[0-9]{4}[0-9]{4}$/),
-    check('village', 'Please include your village name').not().isEmpty(),
+    check('aadhaarNumber', 'Please include a valid Aadhaar number').matches(/^[2-9]{1}[0-9]{3}[0-9]{4}[0-9]{4}$/),
+    check('village', 'Village is required').not().isEmpty(),
+    check('farmSize', 'Farm size is required').not().isEmpty(),
+    check('livestockType', 'Livestock type is required').not().isEmpty(),
     check('password', 'Please enter a password with 6 or more characters').isLength({ min: 6 }),
   ],
   register
+);
+
+// @route   POST /api/auth/register-vet
+// @desc    Register a new vet
+// @access  Public
+router.post(
+  '/register-vet',
+  upload.fields([
+    { name: 'license', maxCount: 1 },
+    { name: 'degree', maxCount: 1 },
+    { name: 'idProof', maxCount: 1 }
+  ]),
+  registerVet
 );
 
 // @route   POST /api/auth/login
@@ -51,18 +97,5 @@ router.get('/profile', protect, getUserProfile);
 // @desc    Update farm data
 // @access  Private
 router.put('/farm-data', protect, updateFarmData);
-
-// @route   POST /api/auth/forgot-password
-// @desc    Forgot password - verify email and current password, then update password
-// @access  Public
-router.post(
-  '/forgot-password',
-  [
-    check('email', 'Please include a valid email').isEmail(),
-    check('oldPassword', 'Current password is required').exists(),
-    check('newPassword', 'Please enter a password with 6 or more characters').isLength({ min: 6 }),
-  ],
-  forgotPassword
-);
 
 module.exports = router;

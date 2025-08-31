@@ -17,46 +17,28 @@ const generateToken = (id) => {
 // @access  Public
 exports.register = async (req, res, next) => {
   try {
-    console.log('🔍 Registration request received:', {
-      name: req.body.name,
-      email: req.body.email,
-      phone: req.body.phone,
-      flatNo: req.body.flatNo,
-      street: req.body.street,
-      district: req.body.district,
-      state: req.body.state,
-      aadhaarNumber: req.body.aadhaarNumber,
-      village: req.body.village,
-      password: req.body.password ? '***hidden***' : 'missing'
-    });
-
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      console.log('❌ Validation errors:', errors.array());
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, email, phone, flatNo, street, district, state, aadhaarNumber, village, password } = req.body;
-
-    // Combine address fields into a single string
-    const address = `${flatNo}, ${street}, ${district}, ${state}`;
-    console.log('✅ Combined address:', address);
+    const { name, email, phone, flatNo, street, district, state, aadhaarNumber, village, farmSize, livestockType, password, role } = req.body;
 
     // Check if user already exists
     const userExists = await User.findOne({ email });
     if (userExists) {
-      console.log('❌ User already exists with email:', email);
       return res.status(400).json({ message: 'User already exists' });
     }
 
     // Check if Aadhaar number already exists
     const aadhaarExists = await User.findOne({ aadhaarNumber });
     if (aadhaarExists) {
-      console.log('❌ Aadhaar number already exists:', aadhaarNumber);
       return res.status(400).json({ message: 'Aadhaar number already registered' });
     }
 
-    console.log('✅ Creating new user...');
+    // Combine address fields
+    const address = `${flatNo}, ${street}, ${district}, ${state}`;
+
     // Create user
     const user = await User.create({ 
       name, 
@@ -65,12 +47,14 @@ exports.register = async (req, res, next) => {
       address, 
       aadhaarNumber, 
       village, 
-      password 
+      farmSize,
+      livestockType,
+      password,
+      role: role || 'farmer'
     });
 
     if (user) {
       const token = generateToken(user._id);
-      console.log('✅ User created successfully:', user.email);
 
       // Set HTTP-only cookie
       res.cookie('token', token, {
@@ -89,21 +73,19 @@ exports.register = async (req, res, next) => {
           address: user.address,
           aadhaarNumber: user.aadhaarNumber,
           village: user.village,
+          farmSize: user.farmSize,
+          livestockType: user.livestockType,
           role: user.role,
         },
         token,
       });
     } else {
-      console.log('❌ Failed to create user');
       res.status(400).json({ message: 'Invalid user data' });
     }
   } catch (error) {
-    console.error('❌ Registration error:', error);
-    
     // Handle specific validation errors
     if (error.name === 'ValidationError') {
       const validationErrors = Object.values(error.errors).map(err => err.message);
-      console.log('❌ Mongoose validation errors:', validationErrors);
       return res.status(400).json({ 
         message: 'Validation failed', 
         errors: validationErrors 
@@ -114,13 +96,135 @@ exports.register = async (req, res, next) => {
     if (error.code === 11000) {
       const field = Object.keys(error.keyValue)[0];
       const fieldName = field === 'aadhaarNumber' ? 'Aadhaar number' : field;
-      console.log('❌ Duplicate key error:', fieldName);
       return res.status(400).json({ 
         message: `${fieldName} already exists` 
       });
     }
     
     // Handle other errors
+    console.error('Registration error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+// @desc    Register a new vet
+// @route   POST /api/auth/register-vet
+// @access  Public
+exports.registerVet = async (req, res, next) => {
+  try {
+    console.log('Vet registration request received');
+    console.log('Request body:', req.body);
+    console.log('Request files:', req.files);
+    
+    // Remove validation check - allow registration without strict validation
+    // const errors = validationResult(req);
+    // if (!errors.isEmpty()) {
+    //   console.log('Validation errors:', errors.array());
+    //   return res.status(400).json({ errors: errors.array() });
+    // }
+
+    const { name, email, phone, flatNo, street, district, state, aadhaarNumber, village, qualification, specialization, experience, licenseNumber, organization, password } = req.body;
+
+    // Check if user already exists
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    // Check if Aadhaar number already exists
+    const aadhaarExists = await User.findOne({ aadhaarNumber });
+    if (aadhaarExists) {
+      return res.status(400).json({ message: 'Aadhaar number already registered' });
+    }
+
+    // Check if license number already exists
+    const licenseExists = await User.findOne({ licenseNumber });
+    if (licenseExists) {
+      return res.status(400).json({ message: 'License number already registered' });
+    }
+
+    // Combine address fields
+    const address = `${flatNo}, ${street}, ${district}, ${state}`;
+
+    // Handle file uploads
+    const documents = {};
+    if (req.files) {
+      if (req.files.license) {
+        documents.license = req.files.license[0].path;
+      }
+      if (req.files.degree) {
+        documents.degree = req.files.degree[0].path;
+      }
+      if (req.files.idProof) {
+        documents.idProof = req.files.idProof[0].path;
+      }
+    }
+
+    // Create vet user (automatically approved)
+    const user = await User.create({ 
+      name, 
+      email, 
+      phone, 
+      address, 
+      aadhaarNumber, 
+      village, 
+      qualification,
+      specialization,
+      experience,
+      licenseNumber,
+      organization,
+      password,
+      role: 'vet',
+      isApproved: true, // Automatically approve vets
+      documents
+    });
+
+    if (user) {
+      res.status(201).json({
+        user: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          address: user.address,
+          aadhaarNumber: user.aadhaarNumber,
+          village: user.village,
+          qualification: user.qualification,
+          specialization: user.specialization,
+          experience: user.experience,
+          licenseNumber: user.licenseNumber,
+          organization: user.organization,
+          role: user.role,
+          isApproved: user.isApproved,
+        },
+        message: 'Vet registration submitted successfully. Your application will be reviewed and approved by our team.'
+      });
+    } else {
+      res.status(400).json({ message: 'Invalid user data' });
+    }
+  } catch (error) {
+    // Handle specific validation errors
+    if (error.name === 'ValidationError') {
+      const validationErrors = Object.values(error.errors).map(err => err.message);
+      return res.status(400).json({ 
+        message: 'Validation failed', 
+        errors: validationErrors 
+      });
+    }
+    
+    // Handle duplicate key errors
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyValue)[0];
+      let fieldName = field;
+      if (field === 'aadhaarNumber') fieldName = 'Aadhaar number';
+      if (field === 'licenseNumber') fieldName = 'License number';
+      return res.status(400).json({ 
+        message: `${fieldName} already exists` 
+      });
+    }
+    
+    // Handle other errors
+    console.error('Vet registration error:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };

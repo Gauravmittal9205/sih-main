@@ -24,8 +24,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const checkAuth = async () => {
       try {
         const token = localStorage.getItem('token');
+        console.log('AuthContext - Token found:', !!token);
         if (token) {
           const userData = await authAPI.getProfile();
+          console.log('AuthContext - User data loaded:', userData);
           setUser(userData);
         }
       } catch (error) {

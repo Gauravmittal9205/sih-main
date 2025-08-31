@@ -1,262 +1,115 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, Phone, Home } from 'lucide-react';
-import { authAPI } from '../services/api';
-import { useLanguage } from '../contexts/LanguageContext';
+import farmBg from '../assets/farm-bg.jpg';
+import { User, Shield, ArrowRight } from 'lucide-react';
 
 const Signup = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    address: '',
-    password: '',
-    confirmPassword: ''
-  });
-  const [error, setError] = useState('');
+  const [selectedType, setSelectedType] = useState<'farmer' | 'vet' | null>(null);
   const navigate = useNavigate();
-  const { t } = useLanguage();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    // Validate form fields
-    if (!formData.name || !formData.email || !formData.phone || !formData.address || !formData.password || !formData.confirmPassword) {
-      setError('Please fill in all required fields');
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setError(t('auth.passwordsDontMatch'));
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
-      return;
-    }
-
-    try {
-      const { name, email, phone, address, password } = formData;
-      console.log('Attempting to register user:', { name, email, phone });
-      
-      await authAPI.register({
-        name,
-        email,
-        phone,
-        address,
-        password
-      });
-      
-      // Redirect to home page after successful registration
-      console.log('Registration successful, redirecting...');
-      navigate('/', { state: { success: t('auth.registrationSuccess') } });
-    } catch (err: any) {
-      console.error('Registration error in component:', err);
-      
-      let errorMessage = 'Registration failed. Please try again.';
-      
-      if (err.response) {
-        // Server responded with an error
-        errorMessage = err.response.data?.message || errorMessage;
-        
-        // Handle validation errors
-        if (err.response.data?.errors) {
-          errorMessage = err.response.data.errors
-            .map((e: any) => e.msg || e.message)
-            .join('\n');
-        }
-      } else if (err.request) {
-        // Request was made but no response received
-        errorMessage = 'Unable to connect to the server. Please check your internet connection.';
-      }
-      
-      setError(errorMessage);
-    }
+  const handleTypeSelection = (type: 'farmer' | 'vet') => {
+    setSelectedType(type);
+    // Navigate to specific registration page
+    navigate(`/signup/${type}`);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            {t('auth.createAccount')}
+    <div
+      className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+      style={{
+        backgroundImage: `url(${farmBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
+      <div className="max-w-2xl w-full space-y-8 bg-white bg-opacity-90 backdrop-blur-sm p-8 rounded-xl shadow-lg">
+        <div className="text-center">
+          <h2 className="text-4xl font-extrabold text-gray-900 mb-4">
+            Join Farm Rakshaa
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            {t('auth.alreadyHaveAccount')}{' '}
+          <p className="text-lg text-gray-600 mb-8">
+            Choose your role to get started with farm health management
+          </p>
+        </div>
+
+        {/* User Type Selection */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Farmer Registration */}
+          <div 
+            className="group cursor-pointer p-6 border-2 border-gray-200 rounded-xl hover:border-teal-400 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+            onClick={() => handleTypeSelection('farmer')}
+          >
+            <div className="text-center">
+              <div className="mx-auto w-16 h-16 bg-gradient-to-br from-green-100 to-teal-100 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <User className="h-8 w-8 text-green-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Farmer</h3>
+              <p className="text-gray-600 mb-4">
+                Manage your farm's biosecurity, track compliance, and get expert guidance
+              </p>
+              <div className="flex items-center justify-center text-teal-600 font-medium group-hover:text-teal-700">
+                <span>Register as Farmer</span>
+                <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+          </div>
+
+          {/* Vet Team Registration */}
+          <div 
+            className="group cursor-pointer p-6 border-2 border-gray-200 rounded-xl hover:border-blue-400 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+            onClick={() => handleTypeSelection('vet')}
+          >
+            <div className="text-center">
+              <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <Shield className="h-8 w-8 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Veterinary Team</h3>
+              <p className="text-gray-600 mb-4">
+                Join our expert network to provide professional farm health services
+              </p>
+              <div className="flex items-center justify-center text-blue-600 font-medium group-hover:text-blue-700">
+                <span>Join Vet Team</span>
+                <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Features Overview */}
+        <div className="mt-8 p-6 bg-gray-50 rounded-xl">
+          <h4 className="text-lg font-semibold text-gray-900 mb-4 text-center">What You'll Get</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
+            <div className="text-center">
+              <div className="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                <span className="text-teal-600 font-bold">✓</span>
+              </div>
+              <p>Expert Guidance</p>
+            </div>
+            <div className="text-center">
+              <div className="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                <span className="text-teal-600 font-bold">✓</span>
+              </div>
+              <p>24/7 Support</p>
+            </div>
+            <div className="text-center">
+              <div className="w-8 h-8 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                <span className="text-teal-600 font-bold">✓</span>
+              </div>
+              <p>Secure Platform</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Login Link */}
+        <div className="text-center">
+          <p className="text-gray-600">
+            Already have an account?{' '}
             <Link to="/login" className="font-medium text-teal-600 hover:text-teal-500">
-              {t('auth.login')}
+              Sign in here
             </Link>
           </p>
         </div>
-        
-        {error && (
-          <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm text-red-700">{error}</p>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm space-y-4">
-            <div>
-              <label htmlFor="name" className="sr-only">
-                {t('auth.fullName')}
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  required
-                  className="appearance-none relative block w-full px-3 py-3 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-teal-500 focus:border-teal-500 focus:z-10 sm:text-sm"
-                  placeholder={t('auth.fullName')}
-                  value={formData.name}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="email" className="sr-only">
-                {t('auth.email')}
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  className="appearance-none relative block w-full px-3 py-3 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-teal-500 focus:border-teal-500 focus:z-10 sm:text-sm"
-                  placeholder={t('auth.email')}
-                  value={formData.email}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="phone" className="sr-only">
-                {t('auth.phone')}
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Phone className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  required
-                  className="appearance-none relative block w-full px-3 py-3 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-teal-500 focus:border-teal-500 focus:z-10 sm:text-sm"
-                  placeholder={t('auth.phone')}
-                  value={formData.phone}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="address" className="sr-only">
-                {t('auth.address')}
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 pt-3 pointer-events-none">
-                  <Home className="h-5 w-5 text-gray-400" />
-                </div>
-                <textarea
-                  id="address"
-                  name="address"
-                  rows={2}
-                  required
-                  className="appearance-none relative block w-full px-3 py-3 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-teal-500 focus:border-teal-500 focus:z-10 sm:text-sm"
-                  placeholder={t('auth.address')}
-                  value={formData.address}
-                  onChange={(e) => setFormData({...formData, address: e.target.value})}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="password" className="sr-only">
-                {t('auth.password')}
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  minLength={6}
-                  className="appearance-none relative block w-full px-3 py-3 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-teal-500 focus:border-teal-500 focus:z-10 sm:text-sm"
-                  placeholder={t('auth.password')}
-                  value={formData.password}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="confirmPassword" className="sr-only">
-                {t('auth.confirmPassword')}
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  minLength={6}
-                  className="appearance-none relative block w-full px-3 py-3 pl-10 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-teal-500 focus:border-teal-500 focus:z-10 sm:text-sm"
-                  placeholder={t('auth.confirmPassword')}
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <button
-              type="submit"
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-colors duration-200"
-            >
-              {t('auth.createAccount')}
-            </button>
-          </div>
-        </form>
       </div>
     </div>
   );

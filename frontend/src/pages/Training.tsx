@@ -1,6 +1,13 @@
 import React, { useState } from 'react';
-import { Play, Clock, Users, Filter, Search } from 'lucide-react';
+import { Play, Clock, Users, Filter, Search, BookOpen } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+
+// ✅ Import your local videos
+import video1 from "../assets/video1.mp4";
+import video2 from "../assets/video2.mp4";
+import video3 from "../assets/video3.mp4";
+import video4 from "../assets/video4.mp4";
+import video5 from "../assets/video5.mp4";
 
 interface TrainingModule {
   id: string;
@@ -17,102 +24,74 @@ interface TrainingModule {
 const trainingModules: TrainingModule[] = [
   {
     id: '1',
-    title: { 
-      en: 'Basic Farm Hygiene', 
-      hi: 'Basic Farm Safai' 
-    },
-    description: { 
-      en: 'Essential hygiene practices for daily farm operations', 
-      hi: 'Daily farm operations ke liye zaroori safai practices' 
-    },
+    title: { en: 'Basic Farm Hygiene', hi: 'Basic Farm Safai' },
+    description: { en: 'Essential hygiene practices for daily farm operations', hi: 'Daily farm operations ke liye zaroori safai practices' },
     duration: 5,
     category: 'Hygiene',
     difficulty: 'beginner',
-    videoUrl: 'https://example.com/video1',
+    videoUrl: video1,
     completionRate: 95,
     participants: 1250
   },
   {
     id: '2',
-    title: { 
-      en: 'Animal Quarantine Protocols', 
-      hi: 'Jaanwaron ki Quarantine Protocols' 
-    },
-    description: { 
-      en: 'How to safely isolate new or sick animals', 
-      hi: 'Naye ya bimar jaanwaron ko safely isolate kaise karein' 
-    },
+    title: { en: 'Animal Quarantine Protocols', hi: 'Jaanwaron ki Quarantine Protocols' },
+    description: { en: 'How to safely isolate new or sick animals', hi: 'Naye ya bimar jaanwaron ko safely isolate kaise karein' },
     duration: 8,
     category: 'Quarantine',
     difficulty: 'intermediate',
-    videoUrl: 'https://example.com/video2',
+    videoUrl: video2,
     completionRate: 87,
     participants: 980
   },
   {
     id: '3',
-    title: { 
-      en: 'Vaccination Schedule Management', 
-      hi: 'Vaccination Schedule Management' 
-    },
-    description: { 
-      en: 'Planning and tracking animal vaccinations', 
-      hi: 'Jaanwaron ke vaccinations plan aur track karna' 
-    },
+    title: { en: 'Vaccination Schedule Management', hi: 'Vaccination Schedule Management' },
+    description: { en: 'Planning and tracking animal vaccinations', hi: 'Jaanwaron ke vaccinations plan aur track karna' },
     duration: 6,
     category: 'Vaccination',
     difficulty: 'intermediate',
-    videoUrl: 'https://example.com/video3',
+    videoUrl: video3,
     completionRate: 92,
     participants: 1100
   },
   {
     id: '4',
-    title: { 
-      en: 'Waste Management Best Practices', 
-      hi: 'Waste Management Best Practices' 
-    },
-    description: { 
-      en: 'Safe disposal of animal waste and farm materials', 
-      hi: 'Jaanwaron ke waste aur farm materials ka safe disposal' 
-    },
+    title: { en: 'Waste Management Best Practices', hi: 'Waste Management Best Practices' },
+    description: { en: 'Safe disposal of animal waste and farm materials', hi: 'Jaanwaron ke waste aur farm materials ka safe disposal' },
     duration: 7,
     category: 'Waste',
     difficulty: 'beginner',
-    videoUrl: 'https://example.com/video4',
+    videoUrl: video4,
     completionRate: 89,
     participants: 850
   },
   {
     id: '5',
-    title: { 
-      en: 'Disease Recognition Signs', 
-      hi: 'Bimari ke Signs Pehchanana' 
-    },
-    description: { 
-      en: 'Early identification of common livestock diseases', 
-      hi: 'Common livestock diseases ko jaldi pehchanana' 
-    },
+    title: { en: 'Disease Recognition Signs', hi: 'Bimari ke Signs Pehchanana' },
+    description: { en: 'Early identification of common livestock diseases', hi: 'Common livestock diseases ko jaldi pehchanana' },
     duration: 10,
     category: 'Health',
     difficulty: 'advanced',
-    videoUrl: 'https://example.com/video5',
+    videoUrl: video5,
     completionRate: 78,
     participants: 650
   }
 ];
 
 const Training = () => {
-  const { language, t } = useLanguage();
+  const { language } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeVideo, setActiveVideo] = useState<string | null>(null);
 
   const categories = ['All', 'Hygiene', 'Quarantine', 'Vaccination', 'Waste', 'Health'];
 
   const filteredModules = trainingModules.filter(module => {
     const matchesCategory = selectedCategory === 'All' || module.category === selectedCategory;
-    const matchesSearch = module.title[language].toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         module.description[language].toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      module.title[language].toLowerCase().includes(searchTerm.toLowerCase()) ||
+      module.description[language].toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
@@ -134,10 +113,9 @@ const Training = () => {
             {language === 'en' ? 'Expert Training Modules' : 'Expert Training Modules'}
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            {language === 'en' 
+            {language === 'en'
               ? 'Learn from veterinary experts with practical, easy-to-follow training modules'
-              : 'Veterinary experts se practical, aasan training modules ke saath sikhein'
-            }
+              : 'Veterinary experts se practical, aasan training modules ke saath sikhein'}
           </p>
         </div>
 
@@ -188,7 +166,10 @@ const Training = () => {
               {/* Video Thumbnail */}
               <div className="relative h-48 bg-gradient-to-br from-teal-100 to-blue-100 flex items-center justify-center">
                 <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors" />
-                <button className="relative bg-white/90 backdrop-blur-sm rounded-full p-4 hover:bg-white hover:scale-110 transition-all">
+                <button
+                  onClick={() => setActiveVideo(module.videoUrl)}
+                  className="relative bg-white/90 backdrop-blur-sm rounded-full p-4 hover:bg-white hover:scale-110 transition-all"
+                >
                   <Play className="h-8 w-8 text-teal-600 ml-1" fill="currentColor" />
                 </button>
                 <div className="absolute top-4 right-4 bg-black/70 text-white px-2 py-1 rounded text-sm">
@@ -227,7 +208,7 @@ const Training = () => {
                     <span>{module.completionRate}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
+                    <div
                       className="bg-gradient-to-r from-teal-500 to-blue-500 h-2 rounded-full"
                       style={{ width: `${module.completionRate}%` }}
                     />
@@ -235,7 +216,10 @@ const Training = () => {
                 </div>
 
                 {/* CTA */}
-                <button className="w-full bg-gradient-to-r from-teal-600 to-blue-600 text-white py-3 rounded-lg font-medium hover:shadow-lg transition-all duration-200 hover:scale-105">
+                <button
+                  onClick={() => setActiveVideo(module.videoUrl)}
+                  className="w-full bg-gradient-to-r from-teal-600 to-blue-600 text-white py-3 rounded-lg font-medium hover:shadow-lg transition-all duration-200 hover:scale-105"
+                >
                   {language === 'en' ? 'Start Training' : 'Training Shuru Karein'}
                 </button>
               </div>
@@ -253,14 +237,34 @@ const Training = () => {
               {language === 'en' ? 'No modules found' : 'Koi modules nahi mile'}
             </h3>
             <p className="text-gray-500">
-              {language === 'en' 
+              {language === 'en'
                 ? 'Try adjusting your search or filter criteria'
-                : 'Apne search ya filter criteria ko adjust karke dekhein'
-              }
+                : 'Apne search ya filter criteria ko adjust karke dekhein'}
             </p>
           </div>
         )}
       </div>
+
+      {/* ✅ Video Modal */}
+      {activeVideo && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-lg p-4 max-w-3xl w-full relative">
+            <button
+              type="button"
+              onClick={() => setActiveVideo(null)}
+              className="absolute top-2 right-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-full p-2"
+            >
+              ✕
+            </button>
+            <video controls autoPlay className="w-full rounded-lg">
+              <source src={activeVideo} type="video/mp4" />
+              <p className="text-center text-sm text-gray-500 mt-2">
+                Your browser does not support the video tag.
+              </p>
+            </video>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
